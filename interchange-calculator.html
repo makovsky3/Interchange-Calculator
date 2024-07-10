@@ -26,18 +26,14 @@
             const [networkFee, setNetworkFee] = React.useState(0.10);
             const [acquirerMarkup, setAcquirerMarkup] = React.useState(0.3);
             const chartRef = React.useRef(null);
+            const chartInstance = React.useRef(null);
 
             React.useEffect(() => {
-                updateChart();
-            }, [amount, interchangeRate, networkFee, acquirerMarkup]);
-
-            const interchangeFee = amount * interchangeRate / 100;
-            const acquirerFee = amount * acquirerMarkup / 100;
-            const totalFee = interchangeFee + networkFee + acquirerFee;
-
-            function updateChart() {
+                if (chartInstance.current) {
+                    chartInstance.current.destroy();
+                }
                 const ctx = chartRef.current.getContext('2d');
-                new Chart(ctx, {
+                chartInstance.current = new Chart(ctx, {
                     type: 'pie',
                     data: {
                         labels: ['Interchange Fee', 'Network Fee', 'Acquirer Fee'],
@@ -51,7 +47,17 @@
                         maintainAspectRatio: false
                     }
                 });
-            }
+
+                return () => {
+                    if (chartInstance.current) {
+                        chartInstance.current.destroy();
+                    }
+                };
+            }, [amount, interchangeRate, networkFee, acquirerMarkup]);
+
+            const interchangeFee = amount * interchangeRate / 100;
+            const acquirerFee = amount * acquirerMarkup / 100;
+            const totalFee = interchangeFee + networkFee + acquirerFee;
 
             return (
                 <div className="calculator">
