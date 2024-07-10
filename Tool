@@ -1,0 +1,138 @@
+import React, { useState, useEffect } from 'react';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Slider } from '@/components/ui/slider';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+
+const InterchangeFeeCalculator = () => {
+  const [transactionAmount, setTransactionAmount] = useState(100);
+  const [interchangeRate, setInterchangeRate] = useState(1.5);
+  const [networkFee, setNetworkFee] = useState(0.10);
+  const [acquirerMarkup, setAcquirerMarkup] = useState(0.3);
+  const [chartData, setChartData] = useState([]);
+
+  const calculateFees = () => {
+    const interchangeFee = (transactionAmount * interchangeRate) / 100;
+    const acquirerFee = (transactionAmount * acquirerMarkup) / 100;
+    const totalFee = interchangeFee + networkFee + acquirerFee;
+
+    return {
+      interchangeFee,
+      networkFee,
+      acquirerFee,
+      totalFee
+    };
+  };
+
+  useEffect(() => {
+    const { interchangeFee, networkFee, acquirerFee } = calculateFees();
+    setChartData([
+      { name: 'Issuer', value: interchangeFee },
+      { name: 'Network', value: networkFee },
+      { name: 'Acquirer', value: acquirerFee }
+    ]);
+  }, [transactionAmount, interchangeRate, networkFee, acquirerMarkup]);
+
+  const COLORS = ['#00C49F', '#FFBB28', '#FF8042'];
+
+  return (
+    <Card className="w-full max-w-3xl mx-auto mt-8">
+      <CardHeader>
+        <CardTitle>Fee-Focused Interchange Calculator</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="transactionAmount">Transaction Amount ($)</Label>
+              <Input
+                id="transactionAmount"
+                type="number"
+                value={transactionAmount}
+                onChange={(e) => setTransactionAmount(Number(e.target.value))}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div>
+              <Label htmlFor="interchangeRate">Interchange Rate (%)</Label>
+              <div className="flex items-center space-x-2">
+                <Slider
+                  id="interchangeRate"
+                  min={0}
+                  max={3}
+                  step={0.1}
+                  value={[interchangeRate]}
+                  onValueChange={(value) => setInterchangeRate(value[0])}
+                />
+                <span className="w-12 text-right">{interchangeRate.toFixed(1)}%</span>
+              </div>
+            </div>
+            <div>
+              <Label htmlFor="networkFee">Network Fee ($)</Label>
+              <Input
+                id="networkFee"
+                type="number"
+                value={networkFee}
+                onChange={(e) => setNetworkFee(Number(e.target.value))}
+                min="0"
+                step="0.01"
+              />
+            </div>
+            <div>
+              <Label htmlFor="acquirerMarkup">Acquirer Markup (%)</Label>
+              <div className="flex items-center space-x-2">
+                <Slider
+                  id="acquirerMarkup"
+                  min={0}
+                  max={1}
+                  step={0.1}
+                  value={[acquirerMarkup]}
+                  onValueChange={(value) => setAcquirerMarkup(value[0])}
+                />
+                <span className="w-12 text-right">{acquirerMarkup.toFixed(1)}%</span>
+              </div>
+            </div>
+          </div>
+          <div>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={chartData}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="value"
+                >
+                  {chartData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip formatter={(value) => `$${value.toFixed(2)}`} />
+                <Legend />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+        <div className="mt-6 space-y-2">
+          {chartData.map((item, index) => (
+            <p key={index} style={{ color: COLORS[index] }}>
+              <strong>{item.name} Fee:</strong> ${item.value.toFixed(2)} ({((item.value / calculateFees().totalFee) * 100).toFixed(2)}% of total fee)
+            </p>
+          ))}
+          <p className="font-bold">Total Fee: ${calculateFees().totalFee.toFixed(2)} ({((calculateFees().totalFee / transactionAmount) * 100).toFixed(2)}% of transaction)</p>
+        </div>
+      </CardContent>
+      <CardFooter>
+        <p className="text-sm text-gray-500">
+          This calculator focuses on the distribution of fees in a card transaction. Actual fees may vary based on card type, merchant category, and other factors.
+        </p>
+      </CardFooter>
+    </Card>
+  );
+};
+
+export default InterchangeFeeCalculator;
