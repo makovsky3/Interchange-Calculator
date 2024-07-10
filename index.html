@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interchange Fee Calculator</title>
+    <script src="https://unpkg.com/react@17/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+</head>
+<body>
+    <div id="interchange-calculator"></div>
+    <script type="text/babel">
+        function InterchangeFeeCalculator() {
+            const [amount, setAmount] = React.useState(100);
+            const [interchangeRate, setInterchangeRate] = React.useState(1.5);
+            const [networkFee, setNetworkFee] = React.useState(0.10);
+
+            const interchangeFee = amount * interchangeRate / 100;
+            const totalFee = interchangeFee + networkFee;
+
+            return (
+                <div style={{fontFamily: 'Arial, sans-serif', maxWidth: '300px', margin: 'auto'}}>
+                    <h2>Interchange Fee Calculator</h2>
+                    <div>
+                        <label>
+                            Transaction Amount ($):
+                            <input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} min="0" step="0.01" />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Interchange Rate (%):
+                            <input type="number" value={interchangeRate} onChange={(e) => setInterchangeRate(e.target.value)} min="0" step="0.1" />
+                        </label>
+                    </div>
+                    <div>
+                        <label>
+                            Network Fee ($):
+                            <input type="number" value={networkFee} onChange={(e) => setNetworkFee(e.target.value)} min="0" step="0.01" />
+                        </label>
+                    </div>
+                    <div>
+                        <p><strong>Interchange Fee:</strong> ${interchangeFee.toFixed(2)}</p>
+                        <p><strong>Total Fee:</strong> ${totalFee.toFixed(2)}</p>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<InterchangeFeeCalculator />, document.getElementById('interchange-calculator'));
+    </script>
+</body>
+</html>
